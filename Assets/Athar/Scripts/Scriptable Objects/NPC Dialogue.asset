@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcfb343c1f69c024586a571694ae3051, type: 3}
+  m_Name: NPC Dialogue
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueData
+  speakerName: Edddie
+  speakerPortrait: {fileID: 4969603060199290634, guid: 720650848492732469e69d0ddf759163, type: 3}
+  lines:
+  - '"Hello there young lad!"'
+  - '"The assignment is dangerous."'
+  - '"Take this mail with you!'

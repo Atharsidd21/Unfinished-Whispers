@@ -3,29 +3,33 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     [Header("Movement Settings")]
-    public float moveSpeed = 4f;          // tiles per second
-    public float tileSize = 1f;           // world units per tile
+    public float moveSpeed = 4f;
+    public float tileSize = 1f;
 
-    [Header("Layer Collision")]
-    public LayerMask collisionLayer;      // assign "Obstacle" layer in Inspector
+    [Header("Layers")]
+    public LayerMask collisionLayer;
+
+    [Header("Input")]
+    public KeyCode interactKey = KeyCode.Z;
+   [SerializeField] private float interactRange;
 
     private Rigidbody2D rb;
     private Animator animator;
 
-    private Vector2 moveDirection;        // current facing / move dir
-    private Vector2 targetPosition;      // tile we are moving toward
+    private Vector2 moveDirection;
+    private Vector2 targetPosition;
     private bool isMoving = false;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponentInChildren<Animator>();
-        // Default facing direction is down
+
+        // Default facing direction is down like Pokemon
         moveDirection = Vector2.down;
         animator.SetFloat("moveX", 0f);
         animator.SetFloat("moveY", -1f);
 
-        // Snap player to nearest tile on start
         targetPosition = SnapToGrid(transform.position);
         rb.position = targetPosition;
     }
@@ -33,7 +37,10 @@ public class Player : MonoBehaviour
     void Update()
     {
         if (!isMoving)
+        {
+            HandleInteractInput();
             ReadInput();
+        }
 
         UpdateAnimator();
     }
@@ -45,14 +52,43 @@ public class Player : MonoBehaviour
     }
 
     // ─────────────────────────────────────────
+    //  INTERACTION
+    // ─────────────────────────────────────────
+   void HandleInteractInput()
+{
+    // Prevent interaction while dialogue is already open
+    if (DialogueManager.Instance.IsActive)
+        return;
+
+    if (!Input.GetKeyDown(interactKey))
+        return;
+
+    // Check one tile ahead
+    Vector2 interactPos = rb.position + moveDirection * tileSize;
+
+    Collider2D hit = Physics2D.OverlapCircle(interactPos, interactRange, collisionLayer);
+
+    if (hit != null)
+    {
+        IInteractable interactable = hit.GetComponent<IInteractable>();
+
+        if (interactable != null)
+            interactable.Interact();
+    }
+}
+
+    // ─────────────────────────────────────────
     //  INPUT
     // ─────────────────────────────────────────
     void ReadInput()
     {
+        // Block movement while dialogue is open
+        if (DialogueManager.Instance.IsActive) return;
+
         float x = Input.GetAxisRaw("Horizontal");
         float y = Input.GetAxisRaw("Vertical");
 
-        // No diagonal movement (Pokemon style)
+        // No diagonals - Pokemon style
         if (x != 0) y = 0;
 
         if (x != 0 || y != 0)
@@ -60,10 +96,8 @@ public class Player : MonoBehaviour
             Vector2 desiredDir = new Vector2(x, y).normalized;
             Vector2 desiredTarget = rb.position + desiredDir * tileSize;
 
-            // Always update facing direction
             moveDirection = desiredDir;
 
-            // Only start moving if tile is walkable
             if (!IsBlocked(desiredTarget))
             {
                 targetPosition = desiredTarget;
@@ -85,7 +119,6 @@ public class Player : MonoBehaviour
 
         rb.MovePosition(newPos);
 
-        // Snap and stop when tile is reached
         if (Vector2.Distance(rb.position, targetPosition) < 0.001f)
         {
             rb.position = targetPosition;
@@ -100,32 +133,35 @@ public class Player : MonoBehaviour
     {
         animator.SetBool("isMoving", isMoving);
 
-        // Only update blend direction when actually moving
-        // so idle frame matches last walk direction (like Pokemon)
+        // Only update direction while moving so idle holds last direction
         if (isMoving)
         {
-            animator.SetFloat("moveX", moveDirection.x, 0.2f, Time.deltaTime);
-            animator.SetFloat("moveY", moveDirection.y, 0.2f, Time.deltaTime);
+            animator.SetFloat("moveX", moveDirection.x, 0.1f, Time.deltaTime);
+            animator.SetFloat("moveY", moveDirection.y, 0.1f, Time.deltaTime);
         }
     }
 
     // ─────────────────────────────────────────
     //  HELPERS
     // ─────────────────────────────────────────
-
-    // Check if target tile has a collider on the collision layer
     bool IsBlocked(Vector2 target)
     {
-        Collider2D hit = Physics2D.OverlapCircle(target, 0.1f, collisionLayer);
-        return hit != null;
+        return Physics2D.OverlapCircle(target, 0.1f, collisionLayer) != null;
     }
 
-    // Snap any position to the nearest tile center
     Vector2 SnapToGrid(Vector2 pos)
     {
         return new Vector2(
             Mathf.Round(pos.x / tileSize) * tileSize,
             Mathf.Round(pos.y / tileSize) * tileSize
         );
+    }
+
+    // ─────────────────────────────────────────
+    //  GIZMOS
+    // ─────────────────────────────────────────
+    void OnDrawGizmos()
+    {
+        Gizmos.DrawWireSphere(transform.position + (Vector3)(moveDirection * tileSize), interactRange);
     }
 }
