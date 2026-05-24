@@ -133,12 +133,16 @@ public class Player : MonoBehaviour
     {
         animator.SetBool("isMoving", isMoving);
 
-        // Only update direction while moving so idle holds last direction
-        if (isMoving)
-        {
-            animator.SetFloat("moveX", moveDirection.x, 0.1f, Time.deltaTime);
-            animator.SetFloat("moveY", moveDirection.y, 0.1f, Time.deltaTime);
-        }
+        // // Only update direction while moving so idle holds last direction
+        // if (isMoving)
+        // {
+        //     animator.SetFloat("moveX", moveDirection.x, 0.1f, Time.deltaTime);
+        //     animator.SetFloat("moveY", moveDirection.y, 0.1f, Time.deltaTime);
+        // }
+
+        // Alwas update the direction of the player to face the last input direction.
+        animator.SetFloat("moveX", moveDirection.x, 0.1f, Time.deltaTime);
+        animator.SetFloat("moveY", moveDirection.y, 0.1f, Time.deltaTime);  
     }
 
     // ─────────────────────────────────────────
