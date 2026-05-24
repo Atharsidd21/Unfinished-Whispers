@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcfb343c1f69c024586a571694ae3051, type: 3}
   m_Name: NPC Dialogue
   m_EditorClassIdentifier: Assembly-CSharp::DialogueData
-  speakerName: Edddie
+  speakerName: Eddie
   speakerPortrait: {fileID: 4969603060199290634, guid: 720650848492732469e69d0ddf759163, type: 3}
   lines:
   - '"Hello there young lad!"'
